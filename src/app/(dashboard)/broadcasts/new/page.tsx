@@ -24,7 +24,7 @@ export default function NewBroadcastPage() {
   const router = useRouter();
   const { accountId } = useAuth();
   const { createAndSendBroadcast, isProcessing, progress } = useBroadcastSending();
-
+  const [UrlMedia, setUrlMedia] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [template, setTemplate] = useState<MessageTemplate | null>(null);
   const [audience, setAudience] = useState<{
@@ -58,6 +58,7 @@ export default function NewBroadcastPage() {
           excludeTagIds: audience.excludeTagIds,
         },
         variables,
+        mediaHeader: UrlMedia, // pass the media header URL to the sending hook
       });
       router.push(`/broadcasts/${broadcastId}`);
     } catch (err) {
@@ -205,6 +206,7 @@ export default function NewBroadcastPage() {
               template={template}
               variables={variables}
               onUpdate={setVariables}
+              onMediaUpdate={setUrlMedia}
               onNext={() => setCurrentStep(3)}
               onBack={() => setCurrentStep(1)}
             />

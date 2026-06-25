@@ -39,6 +39,7 @@ interface BroadcastPayload {
   template: MessageTemplate;
   audience: AudienceConfig;
   variables: Record<string, VariableMapping>;
+  mediaHeader?: string;
 }
 
 interface UseBroadcastSendingReturn {
@@ -361,6 +362,8 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
             customField: payload.audience.customField,
             excludeTagIds: payload.audience.excludeTagIds,
           },
+
+          // media_header: payload.mediaHeader,
           status: 'sending',
           total_recipients: contacts.length,
           sent_count: 0,
@@ -416,7 +419,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
         .from('broadcast_recipients')
         .select('*, contact:contacts(*)')
         .eq('broadcast_id', broadcast.id);
-
+      console.log('Sending batch', recipients);
       if (recipientsFetchError || !recipients) {
         throw new Error('Failed to fetch broadcast recipients');
       }
@@ -436,18 +439,21 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
 
       for (let i = 0; i < recipients.length; i += SEND_BATCH_SIZE) {
         const batch = recipients.slice(i, i + SEND_BATCH_SIZE);
-
         const apiRecipients = batch
           .filter((r) => r.contact?.phone)
           .map((r) => ({
             phone: r.contact!.phone as string,
             params: r.contact
               ? resolveVariables(
-                  payload.variables,
-                  r.contact,
-                  customValueIndex.get(r.contact.id),
-                )
+                payload.variables,
+                r.contact,
+                customValueIndex.get(r.contact.id),
+              )
               : [],
+            messageParams: {
+              ...r.messageParams,
+              headerMediaUrl: payload.mediaHeader
+            }
           }));
 
         if (apiRecipients.length === 0) continue;
@@ -460,6 +466,7 @@ export function useBroadcastSending(): UseBroadcastSendingReturn {
               recipients: apiRecipients,
               template_name: payload.template.name,
               template_language: payload.template.language ?? 'en_US',
+
             }),
           });
 

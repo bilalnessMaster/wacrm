@@ -104,7 +104,12 @@ export async function POST(request: Request) {
       template_language,
       template_params,
     } = body
-
+    console.log(
+      "new receipients",
+      newRecipients,
+      "phone numbers",
+      phone_numbers
+    )
     // Normalize to a list of {phone, params} regardless of shape.
     let recipients: NewRecipient[]
     if (Array.isArray(newRecipients) && newRecipients.length > 0) {

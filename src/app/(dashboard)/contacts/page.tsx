@@ -364,7 +364,7 @@ export default function ContactsPage() {
             gateReason="add or import contacts"
             onClick={() => setImportOpen(true)}
             className="border-border text-muted-foreground hover:bg-muted"
-          >
+            >
             <Upload className="size-4" />
             Import
           </GatedButton>
